@@ -341,14 +341,8 @@ async function decompress(b64){
 }
 
 async function loadData(){
-  // Try localStorage cache first for speed
-  try{
-    const r=localStorage.getItem(DD);
-    if(r){DATA=JSON.parse(r);return;}
-  }catch(e){}
   document.getElementById('lmsg').textContent='Décompression des données...';
   DATA=await decompress(B64);
-  try{localStorage.setItem(DD,JSON.stringify(DATA));}catch(e){}
 }
 
 async function loadDecs(){
