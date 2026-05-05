@@ -313,6 +313,8 @@ const RPL_CONFIG={
   SS:{name:"Sofia SMIRES",color:"#9D174D",bg:"#FCE7F3"},
   GEB:{name:"Ghizlane EL BOUHTOURI",color:"#166534",bg:"#DCFCE7"},
   SC:{name:"Sanaa CHAIDI",color:"#7C2D12",bg:"#FEE2E2"},
+  HB:{name:"Hanane BAGHDADI",color:"#0E7490",bg:"#CFFAFE"},
+  FZA:{name:"Fatima-Zohra ACHARKI",color:"#7E22CE",bg:"#F3E8FF"},
   AD:{name:"Abdelhakim DARAAOUI",color:"#78350F",bg:"#FFFBEB"},
 
 };
@@ -748,7 +750,15 @@ function openNon(id){
   </div>
   <p style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Sélectionnez le motif</p>
   <div class="radio-group" id="motif-group">
-    ${MOTIFS.map((m,i)=>`<label class="radio-item"><input type="radio" name="motif" value="${m}" ${existing&&existing.motif===m?'checked':''}> ${m}</label>`).join('')}
+    ${MOTIFS.map((m,i)=>`<label class="radio-item"><input type="radio" name="motif" value="${m}" ${existing&&existing.motif===m?'checked':''} onchange="toggleAutreProposition()"> ${m}</label>`).join('')}
+    <label class="radio-item"><input type="radio" name="motif" value="Autre proposition" ${existing&&existing.motif&&existing.motif.startsWith('Autre proposition:')?'checked':''} onchange="toggleAutreProposition()"> Autre proposition de parcours ou module</label>
+  </div>
+  <div id="autre-proposition-wrap" style="display:${existing&&existing.motif&&existing.motif.startsWith('Autre proposition:')?'block':'none'};margin-bottom:16px">
+    <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:7px">Précisez votre proposition</label>
+    <textarea id="autre-proposition-text" placeholder="Ex: Je propose d'inscrire ce collaborateur au parcours MONTANA complet..." 
+      style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:13px;resize:vertical;min-height:80px;outline:none;transition:border-color .2s"
+      onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"
+    >${existing&&existing.motif&&existing.motif.startsWith('Autre proposition:')?existing.motif.replace('Autre proposition: ',''):''}</textarea>
   </div>
   <div class="modal-actions">
     <button class="btn-cancel" onclick="closeModal()">Annuler</button>
@@ -757,10 +767,22 @@ function openNon(id){
 </div></div>`);
 }
 
+function toggleAutreProposition(){
+  const sel=document.querySelector('input[name="motif"]:checked');
+  const wrap=document.getElementById('autre-proposition-wrap');
+  if(wrap)wrap.style.display=(sel&&sel.value==='Autre proposition')?'block':'none';
+}
+
 async function confirmNon(id){
   const sel2=document.querySelector('input[name="motif"]:checked');
   if(!sel2){alert('Veuillez sélectionner un motif.');return;}
-  DECS[id]={status:'NON',motif:sel2.value,date:today(),byRPL:curRPL};
+  let motif=sel2.value;
+  if(motif==='Autre proposition'){
+    const txt=document.getElementById('autre-proposition-text');
+    if(!txt||!txt.value.trim()){alert('Veuillez préciser votre proposition.');return;}
+    motif='Autre proposition: '+txt.value.trim();
+  }
+  DECS[id]={status:'NON',motif,date:today(),byRPL:curRPL};
   saveDecs();
   await saveDecision(id);
   closeModal();renderMain();
